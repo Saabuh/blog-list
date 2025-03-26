@@ -3,9 +3,10 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const mongoose = require("mongoose");
+const config = require("./utils/config");
 const blogRouter = require("./controllers/blogRouter");
 
-const mongoUrl = process.env.MONGODB_URI;
+const mongoUrl = config.MONGODB_URI;
 
 mongoose
   .connect(mongoUrl)
