@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 const config = require("./utils/config");
 const blogRouter = require("./controllers/blogRouter");
 const usersRouter = require("./controllers/usersRouter");
+const errorHandler = require("./middleware/errorHandler");
 
 const mongoUrl = config.MONGODB_URI;
 
@@ -19,5 +20,12 @@ app.use(express.json());
 
 app.use("/api/blogs", blogRouter);
 app.use("/api/users", usersRouter);
+
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: "Unknown endpoint" });
+};
+app.use(unknownEndpoint);
+
+app.use(errorHandler);
 
 module.exports = app;

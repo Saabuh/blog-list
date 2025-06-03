@@ -3,22 +3,26 @@ const usersRouter = require("express").Router();
 const User = require("../models/user");
 
 usersRouter.get("/", async (request, response) => {
-  const users = await User.find({});
+  const users = await User.find({}).populate("blogs");
   response.json(users);
 });
 
-usersRouter.post("/", async (request, response) => {
+usersRouter.post("/", async (request, response, next) => {
   const { username, name, password } = request.body;
 
   //validate password
   if (password.length < 3) {
-    return response
-      .status(400)
-      .json({ error: "password length must be greater than 3." });
+    const error = new Error(
+      "Password length must be greater at least 3 characters long.",
+    );
+    error.status = 400;
+    return next(error);
   }
 
   if (!password) {
-    return response.status(400).json({ error: "invalid password." });
+    const error = new Error("invalid password.");
+    error.status = 400;
+    return next(error);
   }
 
   const saltRounds = 10;
