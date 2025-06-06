@@ -1,6 +1,8 @@
 const blogRouter = require("express").Router();
 const User = require("../models/user");
 const Blog = require("../models/blog");
+const jwt = require("jsonwebtoken");
+const getTokenFrom = require("../utils/token_helper");
 
 blogRouter.get("/", async (request, response) => {
   const blogs = await Blog.find({}).populate("user");
@@ -10,8 +12,16 @@ blogRouter.get("/", async (request, response) => {
 blogRouter.post("/", async (request, response) => {
   const body = request.body;
 
-  //find first user and make them the creator of blog
-  const foundUser = await User.findOne({});
+  const decodedToken = jwt.verify(getTokenFrom(request), process.env.SECRET);
+  if (!decodedToken.id) {
+    const error = new Error("token invalid");
+    error.name = "JsonWebTokenError";
+    error.status = 401;
+    next(error);
+
+    // return response.status(401).json({ error: "token invalid" });
+  }
+  const foundUser = await User.findById(decodedToken.id);
 
   const blogData = {
     title: body.title,
