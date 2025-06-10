@@ -9,18 +9,22 @@ blogRouter.get("/", async (request, response) => {
   response.json(blogs);
 });
 
-blogRouter.post("/", async (request, response) => {
+blogRouter.post("/", async (request, response, next) => {
   const body = request.body;
+  let decodedToken;
 
-  const decodedToken = jwt.verify(getTokenFrom(request), process.env.SECRET);
-  if (!decodedToken.id) {
-    const error = new Error("token invalid");
-    error.name = "JsonWebTokenError";
-    error.status = 401;
-    next(error);
-
-    // return response.status(401).json({ error: "token invalid" });
+  try {
+    decodedToken = jwt.verify(getTokenFrom(request), process.env.SECRET);
+    if (!decodedToken.id) {
+      const error = new Error("token invalid");
+      error.name = "JsonWebTokenError";
+      error.status = 401;
+      throw error;
+    }
+  } catch (error) {
+    return next(error);
   }
+
   const foundUser = await User.findById(decodedToken.id);
 
   const blogData = {
